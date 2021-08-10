@@ -1,7 +1,7 @@
 # Vagrant
 ## Curso de Vagrant: Gerenciando máquinas virtuais - Alura
 
-[Documentação:](https://www.vagrantup.com/docs) 
+[Documentação](https://www.vagrantup.com/docs) 
 
 ---
 
