@@ -8,24 +8,24 @@ Vagrant.configure("2") do |config|
 
 	config.vm.box = "ubuntu/bionic64"
 
-	config.vm.define "mysqldb" do |mysql|
-		mysql.vm.network "private_network", ip: "172.0.1.100"
-
-		mysql.vm.provision "shell", 
-			inline: "cat /configs/id_rsa.pub >> .ssh/authorized_keys"
-		mysql.vm.provision "shell", 
-			inline: $script_mysql
-		mysql.vm.provision "shell",
-        	inline: "sudo cat /configs/mysqld.cnf > /etc/mysql/mysql.conf.d/mysqld.cnf"
-		mysql.vm.provision "shell",
-        	inline: "sudo service mysql restart"
-
-		mysql.vm.synced_folder "./configs", "/configs"
-		mysql.vm.synced_folder ".", "/vagrant", disabled: true
-	end
+	# config.vm.define "mysqldb" do |mysql|
+	# 	mysql.vm.network "private_network", ip: "172.0.1.100"
+    #
+	# 	mysql.vm.provision "shell", 
+	# 		inline: "cat /configs/id_rsa.pub >> .ssh/authorized_keys"
+	# 	mysql.vm.provision "shell", 
+	# 		inline: $script_mysql
+	# 	mysql.vm.provision "shell",
+    #       inline: "sudo cat /configs/mysqld.cnf > /etc/mysql/mysql.conf.d/mysqld.cnf"
+	# 	mysql.vm.provision "shell",
+    #       inline: "sudo service mysql restart"
+    #
+	# 	mysql.vm.synced_folder "./configs", "/configs"
+	# 	mysql.vm.synced_folder ".", "/vagrant", disabled: true
+	# end
 
 	config.vm.define "phpweb" do |php|
-		php.vm.network "forwarded_port", guest: 80, host: 8089
+		php.vm.network "forwarded_port", guest: 8888, host: 8888
 		php.vm.network "private_network", ip: "172.0.1.101"
 
 		php.vm.provision "shell",
@@ -35,4 +35,30 @@ Vagrant.configure("2") do |config|
 			puppet.manifest_file = "phpweb.pp"
 		end
 	end
+
+	config.vm.define "mysqlserver" do |mysqlserver|
+		mysqlserver.vm.network "private_network", ip: "172.0.1.102"
+		mysqlserver.vm.provision "shell",
+			inline: "cat /vagrant/configs/id_rsa.pub >> .ssh/authorized_keys"
+	end
+
+	config.vm.define "ansible" do |ansible|
+		ansible.vm.network "private_network", ip: "172.0.1.103"
+		ansible.vm.provision "shell",
+			inline: "cp /vagrant/id_rsa /home/vagrant && \
+			chmod 600 /home/vagrant/id_rsa && \
+			chown vagrant:vagrant /home/vagrant/id_rsa
+			"
+
+		ansible.vm.provision "shell",
+			inline: "apt-get update && \
+			apt-get install -y software-properties-common && \
+			apt-add-repository --yes --update ppa:ansible/ansible && \
+			apt-get install -y ansible"
+
+		ansible.vm.provision "shell",
+			inline: "ansible-playbook -i /vagrant/configs/ansible/hosts \
+			/vagrant/configs/ansible/playbook.yml"
+	end
+
 end
