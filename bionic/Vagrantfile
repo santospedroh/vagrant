@@ -10,6 +10,7 @@ Vagrant.configure("2") do |config|
 	config.vm.provider "virtualbox" do |vb|
 		vb.memory = 512
 		vb.cpus = 1
+	end
 
 	# config.vm.define "mysqldb" do |mysql|
 	# 	mysql.vm.network "private_network", ip: "172.0.1.100"
@@ -35,10 +36,11 @@ Vagrant.configure("2") do |config|
 		vb.memory = 1024
 		vb.cpus = 1
 		vb.name = "phpweb-ubuntu"
+	end
 
-		php.vm.provision "shell",
-        	inline: "sudo apt-get update && sudo apt-get install -y puppet"
-			php.vm.provision "puppet" do |puppet|
+	php.vm.provision "shell",
+       	inline: "sudo apt-get update && sudo apt-get install -y puppet"
+		php.vm.provision "puppet" do |puppet|
 			puppet.manifests_path = "./configs/manifest"
 			puppet.manifest_file = "phpweb.pp"
 		end
@@ -68,4 +70,12 @@ Vagrant.configure("2") do |config|
 			/vagrant/configs/ansible/playbook.yml"
 	end
 
+	config.vm.define "memcached" do |memcached|
+		memcached.vm.box = "centos/7"
+		memcached.vm.provider "virtualbox" do |vb|
+			vb.memory = 512
+			vb.cpus = 1
+			vb.name = "cestos7_memcached"
+		end
+	end
 end
